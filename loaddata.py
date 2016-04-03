@@ -18,7 +18,6 @@ for filename in sorted(os.listdir('efe95')):
     for doc in docs:
         body = {child.tag: child.text for child in doc.iterchildren()}
         print('Writing document {} from {}'.format(body['docid'], filename))
-        es.create(index=DB_INDEX, doc_type='doc', body=body, id=body['docid'],
-                  ignore=409)
+        es.create(DB_INDEX, 'doc', body, id=body['docid'], ignore=409)
         print('Wrote document {} from {}'.format(body['docid'], filename))
     print('Finished writing documents from ', filename)
