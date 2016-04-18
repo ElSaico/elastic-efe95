@@ -14,7 +14,8 @@ outfile = csv.writer(open('results.txt', 'w'), delimiter='\t')
 with open('queries.xml') as infile:
     root = lxml.etree.parse(infile)
 
-for query_id, query in enumerate(root.xpath('/queries/query')):
+for query in root.xpath('/queries/query'):
+    query_id = query.findtext('num')
     title = query.findtext('title')
     narr = query.findtext('narr')
     search = {
@@ -27,5 +28,5 @@ for query_id, query in enumerate(root.xpath('/queries/query')):
     }
     results = es.search(DB_INDEX, 'doc', search, size=100)
     for rank, doc in enumerate(results['hits']['hits']):
-        output = [query_id+1, 'Q0', doc['_id'], rank, doc['_score'], NAME_LABEL]
+        output = [query_id, 'Q0', doc['_id'], rank, doc['_score'], NAME_LABEL]
         outfile.writerow(output)
