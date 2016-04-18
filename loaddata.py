@@ -8,7 +8,7 @@ import elasticsearch
 DB_INDEX = 'efe95'
 
 es = elasticsearch.Elasticsearch()
-es.indices.delete(DB_INDEX)
+es.indices.delete(DB_INDEX, ignore=404)
 es.indices.create(DB_INDEX)
 es.indices.put_mapping('doc', {
     'properties': {
