@@ -7,32 +7,36 @@ import elasticsearch
 import elasticsearch.helpers as es_helpers
 
 DB_INDEX = 'efe95'
+DOC_TYPE = 'doc'
 
 es = elasticsearch.Elasticsearch()
 es.indices.delete(DB_INDEX, ignore=404)
-es.indices.create(DB_INDEX)
-es.indices.put_mapping('doc', {
-    'properties': {
-        'title': {
-            'type': 'string',
-            'fields': {
-                'spanish': {
+es.indices.create(DB_INDEX, {
+    'mappings': {
+        DOC_TYPE: {
+            'properties': {
+                'title': {
                     'type': 'string',
-                    'analyzer': 'spanish',
-                }
-            }
-        },
-        'narr': {
-            'type': 'string',
-            'fields': {
-                'spanish': {
+                    'fields': {
+                        'spanish': {
+                            'type': 'string',
+                            'analyzer': 'spanish',
+                        }
+                    }
+                },
+                'narr': {
                     'type': 'string',
-                    'analyzer': 'spanish',
-                }
+                    'fields': {
+                        'spanish': {
+                            'type': 'string',
+                            'analyzer': 'spanish',
+                        }
+                    }
+                },
             }
-        },
+        }
     }
-}, DB_INDEX)
+})
 
 
 def actions(docs):
@@ -41,16 +45,13 @@ def actions(docs):
         yield {
             '_op_type': 'create',
             '_index': DB_INDEX,
-            '_type': 'doc',
+            '_type': DOC_TYPE,
             '_id': body['docid'],
             '_source': body,
         }
 
 for filename in sorted(os.listdir('efe95')):
-    print('Loading ', filename)
     with open('efe95/{}'.format(filename), encoding='iso-8859-1') as data:
         docs = lxml.html.fragments_fromstring(data.read())
-    print('Loaded ', filename)
     for success, info in es_helpers.parallel_bulk(es, actions(docs)):
         pass
-    print('Finished writing documents from ', filename)

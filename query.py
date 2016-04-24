@@ -6,6 +6,7 @@ import lxml.etree
 import elasticsearch
 
 DB_INDEX = 'efe95'
+DOC_TYPE = 'doc'
 NAME_LABEL = 'bruno'
 
 es = elasticsearch.Elasticsearch()
@@ -24,13 +25,18 @@ for query in root.xpath('/queries/query'):
     for outfile, fields in (output_standard, output_spanish):
         search = {
             'query': {
-                'multi_match': {
-                    'query': title+narr,
-                    'fields': fields,
+                'bool': {
+                    'must': {
+                        'match': {fields[1]: title},
+                    },
+                    'should': [
+                        {'multi_match': {'query': title, 'fields': fields}},
+                        {'multi_match': {'query': narr, 'fields': fields}},
+                    ],
                 },
             }
         }
-        results = es.search(DB_INDEX, 'doc', search, size=100)
+        results = es.search(DB_INDEX, DOC_TYPE, search, size=100)
         for rank, doc in enumerate(results['hits']['hits']):
             output = [query_id, 'Q0', doc['_id'], rank, doc['_score'], NAME_LABEL]
             outfile.writerow(output)
