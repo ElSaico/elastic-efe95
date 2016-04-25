@@ -12,26 +12,41 @@ DOC_TYPE = 'doc'
 es = elasticsearch.Elasticsearch()
 es.indices.delete(DB_INDEX, ignore=404)
 es.indices.create(DB_INDEX, {
+    'settings': {
+        'analysis': {
+            'filter': {
+                'spanish_stop': {
+                    'type': 'stop',
+                    'stopwords': '_spanish_',
+                },
+                'spanish_stemmer': {
+                    'type': 'stemmer',
+                    'language': 'light_spanish',
+                },
+            },
+            'analyzer': {
+                'spanish': {
+                    'tokenizer': 'standard',
+                    'filter': [
+                        'lowercase',
+                        'spanish_stop',
+                        'spanish_stemmer',
+                        'shingle',
+                    ]
+                }
+            }
+        }
+    },
     'mappings': {
         DOC_TYPE: {
             'properties': {
                 'title': {
                     'type': 'string',
-                    'fields': {
-                        'spanish': {
-                            'type': 'string',
-                            'analyzer': 'spanish',
-                        }
-                    }
+                    'analyzer': 'spanish',
                 },
                 'narr': {
                     'type': 'string',
-                    'fields': {
-                        'spanish': {
-                            'type': 'string',
-                            'analyzer': 'spanish',
-                        }
-                    }
+                    'analyzer': 'spanish',
                 },
             }
         }
